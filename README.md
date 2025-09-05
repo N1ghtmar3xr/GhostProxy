@@ -71,7 +71,7 @@ You must have Go installed to compile the project.
 Clone the repository:
 
 ``` bash
-git clone https://github.com/your-username/GhostProxy.git
+git clone https://github.com/N1ghtmar3xr/GhostProxy.git
 cd GhostProxy
 ```
 
@@ -84,10 +84,10 @@ go mod tidy
 Compile the binary for Linux:
 
 ``` bash
-GOOS=linux GOARCH=amd64 go build -o custom-proxy .
+GOOS=linux GOARCH=amd64 go build -o GhostProxy .
 ```
 
-This will create a single executable file named `custom-proxy`.
+This will create a single executable file named `GhostProxy`.
 
 ## Usage
 
@@ -98,7 +98,7 @@ The binary can be run in server or client mode.
 Run this on your publicly accessible server with a domain name pointing
 to it.
 
-Generate a Self-Signed Certificate:
+Generate a SSL Certificate or Self-Signed SSL Certificate:
 
 ``` bash
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365 -nodes -subj "/CN=proxy.yourdomain.com"
@@ -107,7 +107,7 @@ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 3
 Run the Server:
 
 ``` bash
-./custom-proxy   -mode server   -secure   -ws-port 443   -user-port 1080   -cert-file ./cert.pem   -key-file ./key.pem
+./GhostProxy -mode server -secure -ws-port 443 -user-port 1080 -cert-file ./cert.pem -key-file ./key.pem
 ```
 
 The server is now listening for a client on port 443 and for your SOCKS
@@ -121,10 +121,10 @@ access.
 #### Default Mode (Easiest)
 
 If you compiled the binary with the default server www.test.com, you can
-run it with no arguments.
+run it with no arguments. Change the target domain name is source code before compilation to run in default mode.
 
 ``` bash
-./custom-proxy
+./GhostProxy
 ```
 
 It will automatically attempt to connect to `wss://www.test.com`.
@@ -134,38 +134,51 @@ It will automatically attempt to connect to `wss://www.test.com`.
 To specify a server, run the command with arguments.
 
 ``` bash
-./custom-proxy   -mode client   -secure   -server proxy.yourdomain.com
+./GhostProxy -mode client -secure -server proxy.yourdomain.com
 ```
 
 The client will connect to the server, and the tunnel is now active.
 
-## Command-Line Flags
+## Command-Line Flags (When executing on server)
+```
+  ---------------------------------------------------------------
+  Flag          Description                             Default
+  ------------  ----------------------------------      ---------
+  -mode         Run in server mode                      client
+                                                  
+  -secure       Use secure WebSocket (wss://).          false
+                                               
+  -ws-port      Port for the WebSocket listener.        443
+                                               
+  -user-port    Port for the user-facing SOCKS          1080
+                listener.
+                                         
+  -cert-file    Path to the TLS certificate file        ""
+                (required when -secure flag is used).                   
 
-  ------------------------------------------------------------------------
-  Flag         Mode         Description                 Default
-  ------------ ------------ --------------------------- ------------------
-  -mode        Both         Run in server or client     server
-                            mode.                       
+  -key-file     Path to the TLS key file (required      ""
+                when -secure flag is used).   
+                                 
+  ---------------------------------------------------------------
+```
 
-  -secure      Both         Use secure WebSocket        false
-                            (wss://).                   
 
-  -server      Client       The address of the server   your-domain.com
-                            to connect to.              
-
-  -ws-port     Server       Port for the WebSocket      443
-                            listener.                   
-
-  -user-port   Server       Port for the user-facing    1080
-                            SOCKS listener.             
-
-  -cert-file   Server       Path to the TLS certificate ""
-                            file (required for          
-                            -secure).                   
-
-  -key-file    Server       Path to the TLS key file    ""
-                            (required for -secure).     
-  ------------------------------------------------------------------------
+## Command-Line Flags (When executing on Client)
+```
+  ---------------------------------------------------------------
+  Flag          Description                             Default
+  ------------  ----------------------------------      ---------
+  -mode         Run in server mode                      client
+                                                  
+  -secure       Use secure WebSocket (wss://).          false
+                                               
+  -server       The address of the server to            www.test.com
+                connect to.                                           
+                            
+  *** In Client default mode, -secure flag is used. It means if you just run ./GhostProxy, it will start the binaey in client mode with -secure flag which will use wss(443).
+  *** In Client mannual mode, you have to provide -secure flag to use wss(443) otherwise it will use ws(80). Same for server mode too.
+  -----------------------------------------------------------------
+```
 
 ## Example: Accessing an Internal Web Server
 
@@ -179,6 +192,8 @@ Version: `SOCKSv5`
 
 Navigate to the internal IP of a web server in the client's network
 (e.g., `http://192.168.1.50`). Your request will be securely proxied.
+
+*** Proxychains set up can be implemented too for access service other than web like ssh,  rdp and many nore.
 
 ## License
 
